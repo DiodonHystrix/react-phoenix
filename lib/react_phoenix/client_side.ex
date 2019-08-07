@@ -80,7 +80,15 @@ defmodule ReactPhoenix.ClientSide do
   @spec react_component(name :: String.t(), props :: map, opts :: [target_id: String.t()]) ::
           Phoenix.HTML.safe()
   def react_component(name, props, opts) when is_map(props) do
-    props = Jason.encode!(props)
+    props =
+      if opts[:camelize_props] do
+        props
+        |> Jason.encode!()
+        |> Jason.decode!(keys: &Recase.to_camel/1)
+        |> Jason.encode!()
+      else
+        Jason.encode!(props)
+      end
 
     content_tag(:div, "", [
       {:data, [react_class: name, react_props: props, react_target_id: opts[:target_id]]}
